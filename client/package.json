@@ -21,7 +21,7 @@
     "test:unit": "vitest",
     "test:cov": "vitest --coverage",
     "build-only": "vite build",
-    "pretype-check": "pnpm --filter @bookorbit/types build",
+    "pretype-check": "pnpm --filter @bookorbit/types build && pnpm --filter @bookorbit/capacitor-background-audio build",
     "type-check": "vue-tsc --build",
     "lint": "pnpm run lint:check",
     "lint:check": "run-s validate:locales validate:styles lint:oxlint:check lint:eslint:check",
@@ -38,6 +38,7 @@
     "generate-pwa-icons": "pwa-assets-generator --config pwa-assets.config.ts"
   },
   "dependencies": {
+    "@bookorbit/capacitor-background-audio": "workspace:*",
     "@bookorbit/types": "workspace:*",
     "@capacitor/core": "^7.0.0",
     "@capacitor/filesystem": "^7.0.0",

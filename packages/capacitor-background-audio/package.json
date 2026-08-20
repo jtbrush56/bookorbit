@@ -1,0 +1,38 @@
+{
+  "name": "@bookorbit/capacitor-background-audio",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Capacitor plugin scaffold for background audiobook playback with lock-screen transport controls. Native code is unverified - see README.md.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "android/src/main/",
+    "android/build.gradle",
+    "dist/",
+    "ios/Sources",
+    "Package.swift",
+    "BookorbitBackgroundAudio.podspec"
+  ],
+  "capacitor": {
+    "android": {
+      "src": "android"
+    },
+    "ios": {
+      "src": "ios"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@capacitor/core": ">=7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/core": "^7.0.0",
+    "jsdom": "^30.0.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}
