@@ -4,6 +4,7 @@ import { toast } from 'vue-sonner'
 import { i18n } from '@/i18n'
 import { useAuth } from '@/features/auth/composables/useAuth'
 import { api, getAccessToken } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import { useLocaleStore } from '@/stores/locale'
 
 let initialized = false
@@ -36,7 +37,7 @@ function flushPendingSave(): void {
   const accessToken = getAccessToken()
   if (!accessToken) return
 
-  void fetch('/api/v1/user-preferences/locale', {
+  void fetch(resolveApiUrl('/api/v1/user-preferences/locale'), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

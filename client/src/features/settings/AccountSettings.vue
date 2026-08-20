@@ -7,6 +7,7 @@ import { Clock, KeyRound, Link, LinkIcon, MapPin, Save, Trash2, Trophy, Upload }
 import { toast } from 'vue-sonner'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { api } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import { generatePkce } from '@/features/auth/composables/useOidc'
 import { useAuth } from '@/features/auth/composables/useAuth'
 import { usePermissions } from '@/features/auth/composables/usePermissions'
@@ -251,7 +252,7 @@ onMounted(async () => {
   try {
     const [identitiesRes, providersRes] = await Promise.all([
       api('/api/v1/auth/oidc/identities'),
-      fetch('/api/v1/app-settings/oidc/providers/public'),
+      fetch(resolveApiUrl('/api/v1/app-settings/oidc/providers/public')),
     ])
     if (identitiesRes.ok) linkedIdentities.value = await identitiesRes.json()
     if (providersRes.ok) oidcProviders.value = await providersRes.json()

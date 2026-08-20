@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { getValidToken } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import type { UploadResult } from '@bookorbit/types'
 import { useAppInfo } from '@/features/settings/composables/useAppInfo'
 
@@ -41,7 +42,7 @@ async function uploadSingle(item: FileUploadItem, url: string): Promise<void> {
     formData.append('file', item.file)
 
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', url)
+    xhr.open('POST', resolveApiUrl(url))
 
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
 

@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { getValidToken } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import type { AddBookFileResult } from '@bookorbit/types'
 import { useAppInfo } from '@/features/settings/composables/useAppInfo'
 
@@ -41,7 +42,7 @@ async function uploadSingle(item: BookFileUploadItem, bookId: number): Promise<v
     formData.append('file', item.file)
 
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', `/api/v1/books/${bookId}/files`)
+    xhr.open('POST', resolveApiUrl(`/api/v1/books/${bookId}/files`))
 
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
 
@@ -85,7 +86,7 @@ async function uploadSingle(item: BookFileUploadItem, bookId: number): Promise<v
 
 async function triggerRename(bookId: number): Promise<void> {
   const token = await getValidToken()
-  await fetch(`/api/v1/books/${bookId}/rename-files`, {
+  await fetch(resolveApiUrl(`/api/v1/books/${bookId}/rename-files`), {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   }).catch(() => {
