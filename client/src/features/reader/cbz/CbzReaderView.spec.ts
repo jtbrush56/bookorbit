@@ -13,6 +13,8 @@ const mocks = vi.hoisted(() => ({
   savedPageNumber: 9_000,
   onBeforeRouteLeave: vi.fn<(guard: () => Promise<void>) => void>(),
   pageUrl: vi.fn<(page: number) => string>((page) => `/api/v1/cbz/files/22/pages/${page}`),
+  resolvePageSrc: vi.fn<(page: number) => Promise<string>>((page) => Promise.resolve(`/api/v1/cbz/files/22/pages/${page}`)),
+  releasePages: vi.fn<() => void>(),
   progressSave: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
   scrollToIndex: vi.fn<(index: number, options: { align: string }) => void>(),
   updateBookSettings: vi.fn<(patch: unknown) => void>(),
@@ -60,6 +62,8 @@ vi.mock('./composables/useCbz', () => ({
       loading: ref(false),
       error: ref(null),
       pageUrl: mocks.pageUrl,
+      resolvePageSrc: mocks.resolvePageSrc,
+      releasePages: mocks.releasePages,
       load: async () => {
         pageCount.value = mocks.pageCount
       },

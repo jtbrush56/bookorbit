@@ -80,6 +80,7 @@
     "dompurify": "^3.4.13",
     "driver.js": "^1.8.0",
     "echarts": "^6.1.0",
+    "fflate": "^0.8.3",
     "howler": "^2.2.4",
     "intl-messageformat": "^11.2.13",
     "pinia": "^4.0.3",

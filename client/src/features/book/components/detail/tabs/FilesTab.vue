@@ -138,11 +138,11 @@ function downloadFile(file: BookDetailFile) {
   void downloadBookFile(file.id)
 }
 
-// Offline reading covers PDF and EPUB (see client/src/features/offline). CBZ is handled
-// separately since only the cbz container can be extracted client-side (not cbr/cb7, which
-// this same reader also serves) - see client/src/features/reader/cbz.
+// Offline reading covers PDF, EPUB, and CBZ (see client/src/features/offline). CBR/CB7 stay
+// network-only: the shared comic reader route resolves those formats server-side, and there's
+// no client-side RAR/7z decoder to extract them from a local copy.
 function canGoOffline(file: BookDetailFile): boolean {
-  return file.format === 'pdf' || file.format === 'epub'
+  return file.format === 'pdf' || file.format === 'epub' || file.format === 'cbz'
 }
 
 function fileIconStyle(format: string | null): Record<string, string> {

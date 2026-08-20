@@ -43,7 +43,7 @@ const { onActivity, elapsedMinutes } = useReadingSession(
   { trackingEnabled },
 )
 const progress = useReaderProgress(props.bookId, props.fileId, elapsedMinutes, 0, { trackingEnabled })
-const { pageCount, bookTitle, loading, error, pageUrl, load } = useCbz(props.fileId, props.bookId)
+const { pageCount, bookTitle, loading, error, pageUrl, resolvePageSrc, releasePages, load } = useCbz(props.fileId, props.bookId)
 const { fitMode, viewMode, scrollMode, direction, spreadAlignment, spreadGap, forceTwoPage, widePageSingletonMode, bgColor, bgValue, imgFitClass } =
   useCbzSettings()
 const bookSettings = useReaderSettings(props.fileId, 'cbz')
@@ -319,12 +319,17 @@ function setPageRatio(pageIndex: number, width: number, height: number) {
   pageDimensions.value = nextDimensions
 }
 
-function preload(n: number) {
+async function preload(n: number) {
   if (n < 0 || n >= pageCount.value || preloadCache.has(n)) return
   const img = new Image()
-  img.onload = () => setPageRatio(n, img.naturalWidth, img.naturalHeight)
-  img.src = pageUrl(n)
   preloadCache.set(n, img)
+  try {
+    const src = await resolvePageSrc(n)
+    img.onload = () => setPageRatio(n, img.naturalWidth, img.naturalHeight)
+    img.src = src
+  } catch {
+    preloadCache.delete(n)
+  }
 }
 
 function schedulePreload(anchorPage: number) {
@@ -338,7 +343,7 @@ function schedulePreload(anchorPage: number) {
     for (const page of spread.pages) pagesToPreload.add(page)
   }
 
-  for (const page of pagesToPreload) preload(page)
+  for (const page of pagesToPreload) void preload(page)
 
   for (const [page] of preloadCache) {
     if (Math.abs(page - anchorPage) > 12) preloadCache.delete(page)
@@ -709,6 +714,7 @@ onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown)
   if (stripScrollFrame !== null) cancelAnimationFrame(stripScrollFrame)
   void flushPendingProgress()
+  releasePages()
 })
 </script>
 
