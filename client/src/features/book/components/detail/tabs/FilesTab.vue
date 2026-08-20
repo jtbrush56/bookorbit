@@ -14,6 +14,7 @@ import { api } from '@/lib/api'
 import { useBookDownload } from '@/features/book/composables/useBookDownload'
 import { getFormatColor } from '@/features/book/lib/format-colors'
 import { usePermissions } from '@/features/auth/composables/usePermissions'
+import OfflineFileButton from '@/features/offline/components/OfflineFileButton.vue'
 import AddBookFileModal from './AddBookFileModal.vue'
 
 const props = defineProps<{ book: BookDetail }>()
@@ -135,6 +136,12 @@ function openFile(file: BookDetailFile, mode?: 'peek') {
 
 function downloadFile(file: BookDetailFile) {
   void downloadBookFile(file.id)
+}
+
+// Offline reading currently only covers PDF (see client/src/features/offline); EPUB and CBZ
+// use loaders that don't yet support reading from a local copy.
+function canGoOffline(file: BookDetailFile): boolean {
+  return file.format === 'pdf'
 }
 
 function fileIconStyle(format: string | null): Record<string, string> {
@@ -436,6 +443,7 @@ async function toggleWriteLog() {
               </TooltipTrigger>
               <TooltipContent>{{ t('book.detail.files.download') }}</TooltipContent>
             </Tooltip>
+            <OfflineFileButton v-if="canGoOffline(file)" :file-id="file.id" :book-id="book.id" />
           </div>
 
           <DropdownMenu>
@@ -464,6 +472,9 @@ async function toggleWriteLog() {
                 <Download class="mr-2 size-4" />
                 {{ t('book.detail.files.download') }}
               </DropdownMenuItem>
+              <div v-if="canGoOffline(file)" class="md:hidden">
+                <OfflineFileButton :file-id="file.id" :book-id="book.id" variant="menu-item" />
+              </div>
               <DropdownMenuItem v-if="hasPermission('library_edit_metadata')" @click="openRenameModal(file)">
                 <Pencil class="mr-2 size-4" />
                 {{ t('book.detail.files.rename') }}

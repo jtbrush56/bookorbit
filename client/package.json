@@ -40,6 +40,7 @@
   "dependencies": {
     "@bookorbit/types": "workspace:*",
     "@capacitor/core": "^7.0.0",
+    "@capacitor/filesystem": "^7.0.0",
     "@embedpdf/core": "2.15.0",
     "@embedpdf/engines": "2.15.0",
     "@embedpdf/models": "2.15.0",
