@@ -26,6 +26,7 @@ import { ZoomPluginPackage } from '@embedpdf/plugin-zoom/vue'
 import { LoaderCircle } from '@lucide/vue'
 import type { PdfReaderSettings } from '@bookorbit/types'
 import { api } from '@/lib/api'
+import { readOfflineFile } from '@/features/offline/lib/offline-files'
 import { useReaderProgress } from '../shared/composables/useReaderProgress'
 import { useReadingSession } from '../shared/composables/useReadingSession'
 import { useReaderSettings } from '../shared/composables/useReaderSettings'
@@ -170,6 +171,17 @@ function handleBack() {
   router.back()
 }
 
+async function fetchPdfBuffer(fileId: number, signal: AbortSignal): Promise<ArrayBuffer> {
+  const offlineBuffer = await readOfflineFile(fileId)
+  if (offlineBuffer) return offlineBuffer
+
+  const response = await api(`/api/v1/books/files/${fileId}/serve`, { signal })
+  if (!response.ok) throw new Error(`The PDF request failed with status ${response.status}.`)
+  const buffer = await response.arrayBuffer()
+  if (buffer.byteLength === 0) throw new Error('The PDF request returned an empty document.')
+  return buffer
+}
+
 async function loadReader() {
   const sequence = ++loadSequence
   documentAbortController?.abort()
@@ -179,14 +191,7 @@ async function loadReader() {
   documentBuffer.value = null
   readerReady.value = false
   try {
-    const [, , response] = await Promise.all([
-      bookSettings.load(),
-      progress.load(),
-      api(`/api/v1/books/files/${props.fileId}/serve`, { signal: abortController.signal }),
-    ])
-    if (!response.ok) throw new Error(`The PDF request failed with status ${response.status}.`)
-    const buffer = await response.arrayBuffer()
-    if (buffer.byteLength === 0) throw new Error('The PDF request returned an empty document.')
+    const [, , buffer] = await Promise.all([bookSettings.load(), progress.load(), fetchPdfBuffer(props.fileId, abortController.signal)])
     if (sequence !== loadSequence || abortController.signal.aborted) return
     const settings = bookSettings.effective.value as PdfReaderSettings
     initialPage.value = parseDeepLinkPage() ?? progress.pageNumber.value ?? 1

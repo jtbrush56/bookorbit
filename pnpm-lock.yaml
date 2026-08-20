@@ -77,6 +77,9 @@ importers:
       '@capacitor/core':
         specifier: ^7.0.0
         version: 7.6.8
+      '@capacitor/filesystem':
+        specifier: ^7.0.0
+        version: 7.1.8(@capacitor/core@7.6.8)
       '@capacitor/ios':
         specifier: ^7.0.0
         version: 7.6.8(@capacitor/core@7.6.8)
@@ -96,6 +99,9 @@ importers:
       '@capacitor/core':
         specifier: ^7.0.0
         version: 7.6.8
+      '@capacitor/filesystem':
+        specifier: ^7.0.0
+        version: 7.1.8(@capacitor/core@7.6.8)
       '@embedpdf/core':
         specifier: 2.15.0
         version: 2.15.0(patch_hash=2000da4fd605dad67860a28724f4ab90eafa7215b89abe29df3f001bebc15a77)(preact@10.29.7)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(svelte@5.56.4(@typescript-eslint/types@8.67.0))(vue@3.5.41(typescript@6.0.3))
@@ -1277,10 +1283,18 @@ packages:
   '@capacitor/core@7.6.8':
     resolution: {integrity: sha512-x1xfxvNcTSnj6OoYaAB0n0a0HRvi5f2YjcVnMLxpMhbHDgGDAzzN9z8cnPCYV+SKTvqGF1hezHm82Op32XaAGg==}
 
+  '@capacitor/filesystem@7.1.8':
+    resolution: {integrity: sha512-Qpw/2SE4/CzqAUvGgSM9hw/uXQ5qoOaF4wxbToXwpAaKPS+tzletS1h5ti3jjLmGcqizTs2sEXMtcsARW/Ceew==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
+
   '@capacitor/ios@7.6.8':
     resolution: {integrity: sha512-TAM1FdI1Cfl8e/wLBo7x5m61V/J1fMEpyxU2psZzHzsa436k2pwEME6CQoBRYdw6Q6gud0jZSPwOVrNn+MI7Ag==}
     peerDependencies:
       '@capacitor/core': ^7.6.0
+
+  '@capacitor/synapse@1.0.4':
+    resolution: {integrity: sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -10420,9 +10434,16 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@capacitor/filesystem@7.1.8(@capacitor/core@7.6.8)':
+    dependencies:
+      '@capacitor/core': 7.6.8
+      '@capacitor/synapse': 1.0.4
+
   '@capacitor/ios@7.6.8(@capacitor/core@7.6.8)':
     dependencies:
       '@capacitor/core': 7.6.8
+
+  '@capacitor/synapse@1.0.4': {}
 
   '@colors/colors@1.5.0':
     optional: true
