@@ -33,6 +33,7 @@ import BookCoverPlaceholder from '@/features/book/components/BookCoverPlaceholde
 import { bookCoverPalette } from '@/features/book/lib/book-cover'
 import { useAudioProgress } from './composables/useAudioProgress'
 import { useAudioQueue } from './composables/useAudioQueue'
+import { releaseOfflineAudioSources, resolveOfflineAudioSources } from './lib/resolve-offline-audio'
 import { useAudioSettings } from './composables/useAudioSettings'
 import { useAudioBookmarks, type AudioBookmark } from './composables/useAudioBookmarks'
 import { useReadingSession } from '../shared/composables/useReadingSession'
@@ -85,6 +86,7 @@ let stopQueuePlayingWatch: WatchStopHandle | null = null
 const isPlaying = ref(false)
 const currentPosition = ref(0)
 const currentFileIndex = ref(0)
+let offlineAudioSources = new Map<number, string>()
 
 function onFileEnd(fileId: number) {
   if (!queue) return
@@ -106,6 +108,7 @@ function initQueue(startFileId: number, startPosition: number) {
       id: f.id,
       format: f.format,
       durationSeconds: f.durationSeconds,
+      offlineSrc: offlineAudioSources.get(f.id),
     })),
     onFileEnd,
   )
@@ -223,6 +226,7 @@ onUnmounted(() => {
   stopTicker()
   progress.flush()
   cancelSleepTimer()
+  releaseOfflineAudioSources(offlineAudioSources)
   document.removeEventListener('keydown', handleKey)
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', null)
@@ -748,6 +752,12 @@ onMounted(async () => {
 
   if (!audioFiles.value.length) {
     error.value = t('reader.audiobook.noAudioFiles')
+    return
+  }
+
+  offlineAudioSources = await resolveOfflineAudioSources(audioFiles.value.map((f) => ({ id: f.id, format: f.format })))
+  if (!mounted) {
+    releaseOfflineAudioSources(offlineAudioSources)
     return
   }
 
