@@ -3,6 +3,7 @@ import { watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { useAuth } from '@/features/auth/composables/useAuth'
 import { api, getAccessToken } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import { applyDisplayPreferences, getDisplayPreferencesSnapshot, useDisplaySettings } from '@/composables/useDisplaySettings'
 
 let initialized = false
@@ -24,7 +25,7 @@ function flushPendingSave(): void {
   const accessToken = getAccessToken()
   if (!accessToken) return
 
-  void fetch('/api/v1/user-preferences/display', {
+  void fetch(resolveApiUrl('/api/v1/user-preferences/display'), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

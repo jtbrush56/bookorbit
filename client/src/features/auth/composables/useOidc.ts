@@ -1,4 +1,5 @@
 import type { OidcCallbackResponse, OidcProviderPublic } from '@bookorbit/types'
+import { resolveApiUrl } from '@/lib/server-connection'
 
 export async function generatePkce(): Promise<{ codeVerifier: string; codeChallenge: string }> {
   const array = new Uint8Array(32)
@@ -40,7 +41,7 @@ export class OidcLoginError extends Error {
 export function useOidc() {
   async function getPublicProviders(): Promise<OidcProviderPublic[]> {
     try {
-      const res = await fetch('/api/v1/app-settings/oidc/providers/public')
+      const res = await fetch(resolveApiUrl('/api/v1/app-settings/oidc/providers/public'))
       if (!res.ok) return []
       return res.json()
     } catch {
@@ -62,7 +63,7 @@ export function useOidc() {
       sessionStorage.setItem('oidc_redirect', redirectTarget)
     }
 
-    const stateRes = await fetch(`/api/v1/auth/oidc/${provider.slug}/state`, { method: 'POST', credentials: 'include' })
+    const stateRes = await fetch(resolveApiUrl(`/api/v1/auth/oidc/${provider.slug}/state`), { method: 'POST', credentials: 'include' })
     if (!stateRes.ok) throw new OidcLoginError(undefined, 'Failed to generate state')
     const { state, authorizationEndpoint } = (await stateRes.json()) as { state: string; authorizationEndpoint: string }
 
@@ -97,7 +98,7 @@ export function useOidc() {
 
     const redirectUri = `${window.location.origin}/oauth2-callback`
 
-    const res = await fetch('/api/v1/auth/oidc/callback', {
+    const res = await fetch(resolveApiUrl('/api/v1/auth/oidc/callback'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

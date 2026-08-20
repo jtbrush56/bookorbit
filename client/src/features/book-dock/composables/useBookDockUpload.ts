@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { getValidToken } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import type { BookDockFile } from '@bookorbit/types'
 
 import { useAppInfo } from '@/features/settings/composables/useAppInfo'
@@ -36,7 +37,7 @@ async function uploadSingle(item: UploadItem): Promise<void> {
     formData.append('file', item.file)
 
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', '/api/v1/book-dock/upload')
+    xhr.open('POST', resolveApiUrl('/api/v1/book-dock/upload'))
 
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
 

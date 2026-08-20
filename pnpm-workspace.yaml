@@ -2,6 +2,7 @@ packages:
   - "client"
   - "server"
   - "packages/*"
+  - "apps/*"
 overrides:
   "@xhmikosr/decompress": ^11.1.4
   "@esbuild-kit/core-utils>esbuild": ^0.25.12

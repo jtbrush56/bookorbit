@@ -648,6 +648,12 @@ export const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/connect',
+    name: 'connect',
+    component: () => import('@/features/auth/ServerConnectPage.vue'),
+    meta: { public: true, title: () => 'Connect to Server' },
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('@/features/auth/LoginPage.vue'),

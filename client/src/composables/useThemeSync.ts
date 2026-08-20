@@ -3,6 +3,7 @@ import { watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { useAuth } from '@/features/auth/composables/useAuth'
 import { api, getAccessToken } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import { useThemeStore } from '@/stores/theme'
 
 let initialized = false
@@ -62,7 +63,7 @@ function flushPendingSave(): void {
   const accessToken = getAccessToken()
   if (!accessToken) return
 
-  void fetch('/api/v1/user-preferences/theme', {
+  void fetch(resolveApiUrl('/api/v1/user-preferences/theme'), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

@@ -1,6 +1,7 @@
 import { io, type ManagerOptions, type Socket, type SocketOptions } from 'socket.io-client'
 
 import { getValidToken, refreshAccessToken } from '@/lib/api'
+import { resolveSocketUrl } from '@/lib/server-connection'
 
 const REAUTH_BASE_DELAY_MS = 1_000
 const REAUTH_MAX_DELAY_MS = 30_000
@@ -21,7 +22,7 @@ const STABLE_CONNECTION_MS = 5_000
  * would just repeat the rejection.
  */
 export function createAuthenticatedSocket(namespace: string, options: Partial<ManagerOptions & SocketOptions> = {}): Socket {
-  const socket = io(namespace, {
+  const socket = io(resolveSocketUrl(namespace), {
     transports: ['websocket'],
     ...options,
     // Resolved per handshake, and awaited: a woken tab holds a token the server already rejects.
