@@ -56,3 +56,13 @@ Both are committed to the repo, matching Capacitor's standard project layout. Re
 `cap sync` after upgrading Capacitor packages; don't hand-edit the generated
 `capacitor.config.json` files under `android/app/src/main/assets` or `ios/App/App`
 &mdash; edit `capacitor.config.ts` instead.
+
+## CI
+
+`.github/workflows/ci.yml` has a `mobile-android` job that assembles a debug APK on
+every PR/push touching `apps/mobile/**` or `client/**`, and uploads it as a build
+artifact &mdash; an unsigned build-only check, not a release artifact. A `mobile-ios` job
+does the same for the iOS Simulator target, but only on manual `workflow_dispatch`
+(macOS runners cost several times the Actions minutes of Linux ones); trigger it by hand
+from the Actions tab when validating an iOS-affecting change. Neither job needs code
+signing or store credentials &mdash; that's scoped to store submission, separately.
