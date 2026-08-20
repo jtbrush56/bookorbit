@@ -2,5 +2,8 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../../../node_modules/.pnpm/@capacitor+android@7.6.8_@capacitor+core@7.6.8/node_modules/@capacitor/android/capacitor')
 
+include ':bookorbit-capacitor-background-audio'
+project(':bookorbit-capacitor-background-audio').projectDir = new File('../../../packages/capacitor-background-audio/android')
+
 include ':capacitor-filesystem'
 project(':capacitor-filesystem').projectDir = new File('../../../node_modules/.pnpm/@capacitor+filesystem@7.1.8_@capacitor+core@7.6.8/node_modules/@capacitor/filesystem/android')

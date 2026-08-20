@@ -12,6 +12,7 @@
     "add:ios": "cap add ios"
   },
   "dependencies": {
+    "@bookorbit/capacitor-background-audio": "workspace:*",
     "@capacitor/android": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@capacitor/filesystem": "^7.0.0",
