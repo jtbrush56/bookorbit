@@ -138,10 +138,11 @@ function downloadFile(file: BookDetailFile) {
   void downloadBookFile(file.id)
 }
 
-// Offline reading currently only covers PDF (see client/src/features/offline); EPUB and CBZ
-// use loaders that don't yet support reading from a local copy.
+// Offline reading covers PDF and EPUB (see client/src/features/offline). CBZ is handled
+// separately since only the cbz container can be extracted client-side (not cbr/cb7, which
+// this same reader also serves) - see client/src/features/reader/cbz.
 function canGoOffline(file: BookDetailFile): boolean {
-  return file.format === 'pdf'
+  return file.format === 'pdf' || file.format === 'epub'
 }
 
 function fileIconStyle(format: string | null): Record<string, string> {
