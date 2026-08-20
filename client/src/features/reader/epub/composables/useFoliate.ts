@@ -1,5 +1,6 @@
 import { onUnmounted, ref } from 'vue'
 import { api, getAccessToken } from '@/lib/api'
+import { readOfflineFile } from '@/features/offline/lib/offline-files'
 import { useFoliateAnnotations } from './useFoliateAnnotations'
 import { useFoliateSelection } from './useFoliateSelection'
 import { useFoliateInput } from './useFoliateInput'
@@ -239,28 +240,52 @@ export function useFoliate(
       let shouldRestoreByFraction = false
 
       if (format === 'epub') {
-        const infoRes = await api(`/api/v1/epub/${bookId}/info?fileId=${fileId}`)
-        if (!infoRes.ok) throw new Error(`Failed to fetch EPUB info: ${infoRes.status}`)
-        const bookInfo = await infoRes.json()
-        const rawLang = (bookInfo as EpubBookInfo)?.metadata?.language
-        bookLanguage.value = typeof rawLang === 'string' && rawLang ? (rawLang.split('-')[0] ?? 'en').toLowerCase() : 'en'
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const makeStreamingBook = (window as any).makeStreamingBook as
-          | ((
-              id: number,
-              base: string,
-              info: unknown,
-              fetchFile: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
-              bookType: null,
-              fileId: number,
-            ) => Promise<unknown>)
-          | undefined
-        if (!makeStreamingBook) throw new Error('makeStreamingBook not available')
-        const book = await makeStreamingBook(bookId, '/api/v1/epub', bookInfo, makeFoliateFetchFile(), null, fileId)
-        applyEpubOpenOptions(book, options)
-        shouldRestoreByFraction = isFixedLayoutBook(book)
-        isFixedLayout.value = shouldRestoreByFraction
-        await view.open(book as never)
+        const offlineBuffer = await readOfflineFile(fileId)
+        if (offlineBuffer) {
+          // Best-effort only: language metadata refines rendering (hyphenation, fonts) but
+          // isn't required to open the book, and offline means this fetch may simply fail.
+          try {
+            const infoRes = await api(`/api/v1/epub/${bookId}/info?fileId=${fileId}`)
+            if (infoRes.ok) {
+              const bookInfo = await infoRes.json()
+              const rawLang = (bookInfo as EpubBookInfo)?.metadata?.language
+              bookLanguage.value = typeof rawLang === 'string' && rawLang ? (rawLang.split('-')[0] ?? 'en').toLowerCase() : 'en'
+            }
+          } catch {
+            // No connectivity - keep the default language.
+          }
+          const file = new File([offlineBuffer], `book-file-${fileId}.epub`, { type: 'application/epub+zip' })
+          await view.open(file)
+          const openedBook = (view as unknown as { book?: unknown }).book
+          if (openedBook) {
+            applyEpubOpenOptions(openedBook, options)
+            shouldRestoreByFraction = isFixedLayoutBook(openedBook)
+            isFixedLayout.value = shouldRestoreByFraction
+          }
+        } else {
+          const infoRes = await api(`/api/v1/epub/${bookId}/info?fileId=${fileId}`)
+          if (!infoRes.ok) throw new Error(`Failed to fetch EPUB info: ${infoRes.status}`)
+          const bookInfo = await infoRes.json()
+          const rawLang = (bookInfo as EpubBookInfo)?.metadata?.language
+          bookLanguage.value = typeof rawLang === 'string' && rawLang ? (rawLang.split('-')[0] ?? 'en').toLowerCase() : 'en'
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const makeStreamingBook = (window as any).makeStreamingBook as
+            | ((
+                id: number,
+                base: string,
+                info: unknown,
+                fetchFile: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
+                bookType: null,
+                fileId: number,
+              ) => Promise<unknown>)
+            | undefined
+          if (!makeStreamingBook) throw new Error('makeStreamingBook not available')
+          const book = await makeStreamingBook(bookId, '/api/v1/epub', bookInfo, makeFoliateFetchFile(), null, fileId)
+          applyEpubOpenOptions(book, options)
+          shouldRestoreByFraction = isFixedLayoutBook(book)
+          isFixedLayout.value = shouldRestoreByFraction
+          await view.open(book as never)
+        }
       } else {
         const mimeType = format === 'pdf' ? 'application/pdf' : 'application/zip'
         const ext = format === 'pdf' ? 'pdf' : format === 'cbz' ? 'cbz' : format
