@@ -1,4 +1,5 @@
 import type { RefreshResponse } from '@bookorbit/types'
+import { resolveApiUrl } from './server-connection'
 
 /**
  * Refresh this far ahead of `exp`. A token that survives the check still has to travel, reach a
@@ -95,7 +96,8 @@ export function setOnAuthFailure(fn: () => void): void {
 function rawFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers)
   if (_accessToken) headers.set('Authorization', `Bearer ${_accessToken}`)
-  return fetch(input, { ...init, headers, credentials: 'include' })
+  const resolvedInput = typeof input === 'string' ? resolveApiUrl(input) : input
+  return fetch(resolvedInput, { ...init, headers, credentials: 'include' })
 }
 
 async function attemptRefresh(): Promise<string> {

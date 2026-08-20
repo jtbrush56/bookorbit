@@ -2,9 +2,19 @@ import type { Router } from 'vue-router'
 import { useAuth } from '@/features/auth/composables/useAuth'
 import { useChangePasswordDialog } from '@/composables/useChangePasswordDialog'
 import { useSetupStatus } from '@/features/auth/composables/useSetupStatus'
+import { getServerUrl, isNativePlatform } from '@/lib/server-connection'
 
 export function registerAuthGuard(router: Router): void {
   router.beforeEach(async (to) => {
+    // Native builds have no origin of their own to make relative API calls against, so
+    // everything is gated on a configured server until the user picks one.
+    if (isNativePlatform() && !getServerUrl()) {
+      return to.path === '/connect' ? true : { path: '/connect' }
+    }
+    if (to.path === '/connect') {
+      return { path: '/login' }
+    }
+
     const { fetchSetupStatus, allowRegistration } = useSetupStatus()
     let requiresSetup = false
     try {

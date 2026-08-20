@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import type { AuthUser, AuthResponse } from '@bookorbit/types'
 import { api, refreshAccessToken, setAccessToken, setOnAuthFailure } from '@/lib/api'
+import { resolveApiUrl } from '@/lib/server-connection'
 import router from '@/router'
 import { cancelPendingDisplaySettingsSync, initDisplaySettingsSync, loadDisplaySettingsFromServer } from '@/composables/useDisplaySettingsSync'
 import { cancelPendingThemeSync, initThemeSync, loadFromServer } from '@/composables/useThemeSync'
@@ -132,7 +133,7 @@ export function useAuth() {
   }
 
   async function login(username: string, password: string): Promise<void> {
-    const res = await fetch('/api/v1/auth/login', {
+    const res = await fetch(resolveApiUrl('/api/v1/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -164,7 +165,7 @@ export function useAuth() {
       headers['x-setup-token'] = payload.setupToken
     }
 
-    const res = await fetch('/api/v1/auth/setup', {
+    const res = await fetch(resolveApiUrl('/api/v1/auth/setup'), {
       method: 'POST',
       headers,
       credentials: 'include',
@@ -192,7 +193,7 @@ export function useAuth() {
   }
 
   async function register(payload: { username: string; name: string; email: string; password: string }): Promise<void> {
-    const res = await fetch('/api/v1/auth/register', {
+    const res = await fetch(resolveApiUrl('/api/v1/auth/register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -209,7 +210,7 @@ export function useAuth() {
 
   async function logout(): Promise<void> {
     try {
-      const res = await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' })
+      const res = await fetch(resolveApiUrl('/api/v1/auth/logout'), { method: 'POST', credentials: 'include' })
       clearAuth()
       if (res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -225,7 +226,7 @@ export function useAuth() {
   }
 
   async function loginWithMagicLink(token: string): Promise<void> {
-    const res = await fetch('/api/v1/auth/magic-links/login', {
+    const res = await fetch(resolveApiUrl('/api/v1/auth/magic-links/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
