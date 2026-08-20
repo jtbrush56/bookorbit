@@ -5,6 +5,9 @@ vi.mock('@/lib/api', () => ({
   getAccessToken: vi.fn<() => string | null>(),
 }))
 
+const readOfflineFileMock = vi.hoisted(() => vi.fn<(fileId: number) => Promise<ArrayBuffer | null>>())
+vi.mock('@/features/offline/lib/offline-files', () => ({ readOfflineFile: readOfflineFileMock }))
+
 vi.mock('../useFoliateAnnotations', () => ({
   useFoliateAnnotations: () => ({
     annotationStyleMap: new Map(),
@@ -91,6 +94,8 @@ describe('useFoliate.open', () => {
     ;(window as { makeStreamingBook?: unknown }).makeStreamingBook = vi
       .fn<(...args: unknown[]) => Promise<unknown>>()
       .mockResolvedValue({ type: 'book' })
+
+    readOfflineFileMock.mockReset().mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -279,5 +284,69 @@ describe('useFoliate.open', () => {
     expect(inputMock.suppressNextTapNavigation).toHaveBeenCalledTimes(1)
     expect(onAnnotationClick).toHaveBeenCalledWith('epubcfi(/6/4)', expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }))
     expect(inputMock.suppressNextTapNavigation.mock.invocationCallOrder[0]!).toBeLessThan(onAnnotationClick.mock.invocationCallOrder[0]!)
+  })
+
+  describe('offline EPUB', () => {
+    it('opens a local file directly and skips the streaming book loader when a copy exists', async () => {
+      readOfflineFileMock.mockResolvedValue(new TextEncoder().encode('epub bytes').buffer)
+      const foliate = useFoliate(() => container)
+
+      await foliate.open(1, 2, 'epub', null, undefined)
+
+      expect(readOfflineFileMock).toHaveBeenCalledWith(2)
+      const makeStreamingBook = (window as unknown as { makeStreamingBook: ReturnType<typeof vi.fn> }).makeStreamingBook
+      expect(makeStreamingBook).not.toHaveBeenCalled()
+      expect(mockOpen).toHaveBeenCalledExactlyOnceWith(expect.any(File))
+      const openedFile = mockOpen.mock.calls[0]![0] as File
+      expect(openedFile.type).toBe('application/epub+zip')
+    })
+
+    it('still applies fetched language metadata when the info request succeeds offline-first', async () => {
+      readOfflineFileMock.mockResolvedValue(new TextEncoder().encode('epub bytes').buffer)
+      vi.mocked(api).mockResolvedValue({
+        ok: true,
+        json: vi.fn<() => Promise<unknown>>().mockResolvedValue({ metadata: { language: 'fr-FR' } }),
+      } as unknown as Response)
+      const foliate = useFoliate(() => container)
+
+      await foliate.open(1, 2, 'epub', null, undefined)
+
+      expect(foliate.bookLanguage.value).toBe('fr')
+    })
+
+    it('opens successfully even when the offline language-info fetch fails outright', async () => {
+      readOfflineFileMock.mockResolvedValue(new TextEncoder().encode('epub bytes').buffer)
+      vi.mocked(api).mockRejectedValue(new Error('offline'))
+      const foliate = useFoliate(() => container)
+
+      await expect(foliate.open(1, 2, 'epub', null, undefined)).resolves.toBeUndefined()
+      expect(foliate.error.value).toBeNull()
+      expect(mockOpen).toHaveBeenCalledExactlyOnceWith(expect.any(File))
+    })
+
+    it('detects fixed-layout from the opened view when reading a local file', async () => {
+      readOfflineFileMock.mockResolvedValue(new TextEncoder().encode('epub bytes').buffer)
+      mockOpen.mockImplementation(async () => {
+        ;(viewEl as unknown as { book?: unknown }).book = { rendition: { layout: 'pre-paginated', spread: 'auto' } }
+      })
+      const foliate = useFoliate(() => container)
+
+      await foliate.open(1, 2, 'epub', null, undefined)
+
+      expect(foliate.isFixedLayout.value).toBe(true)
+    })
+
+    it('restores fixed-layout EPUBs opened from a local file by fraction instead of CFI', async () => {
+      readOfflineFileMock.mockResolvedValue(new TextEncoder().encode('epub bytes').buffer)
+      mockOpen.mockImplementation(async () => {
+        ;(viewEl as unknown as { book?: unknown }).book = { rendition: { layout: 'pre-paginated', spread: 'auto' } }
+      })
+      const foliate = useFoliate(() => container)
+
+      await foliate.open(1, 2, 'epub', 'epubcfi(/6/14)', 0.69)
+
+      expect(mockGoTo).not.toHaveBeenCalledWith('epubcfi(/6/14)')
+      expect(mockGoToFraction).toHaveBeenCalledWith(0.69)
+    })
   })
 })
