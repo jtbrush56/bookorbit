@@ -5,6 +5,8 @@ export interface AudioFile {
   id: number
   format: string | null
   durationSeconds: number | null
+  /** Local blob URL for a file already downloaded via the offline feature; overrides the network src. */
+  offlineSrc?: string
 }
 
 function serveUrl(fileId: number): string {
@@ -29,7 +31,7 @@ export function useAudioQueue(files: AudioFile[], onFileEnd: (fileId: number) =>
     const file = files[index]!
     const fmt = file.format?.toLowerCase() ?? 'm4b'
     const howl = new Howl({
-      src: [serveUrl(file.id)],
+      src: [file.offlineSrc ?? serveUrl(file.id)],
       format: [fmt],
       html5: true,
       preload: false,
